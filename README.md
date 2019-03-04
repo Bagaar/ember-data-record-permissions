@@ -1,4 +1,4 @@
-ember-data-record-permissions
+@bagaaravel/ember-data-record-permissions
 ==============================================================================
 
 [Short description of the addon.]
@@ -15,7 +15,7 @@ Installation
 ------------------------------------------------------------------------------
 
 ```
-ember install ember-data-record-permissions
+ember install @bagaaravel/ember-data-record-permissions
 ```
 
 

@@ -1,6 +1,8 @@
 import { PERMISSIONS } from '@bagaaravel/ember-data-record-permissions'
+import { EVENT } from '@bagaaravel/ember-data-record-permissions/config'
 import { getOwner } from '@ember/application'
 import { assert } from '@ember/debug'
+import { sendEvent } from '@ember/object/events'
 import Service from '@ember/service'
 import { typeOf } from '@ember/utils'
 
@@ -49,6 +51,8 @@ export default Service.extend({
     }
 
     this.set('modelPermissions', modelPermissions)
+
+    sendEvent(this, EVENT.MODEL_PERMISSIONS_CHANGED, [modelName])
   },
 
   setRecordPermissions (modelName, recordId, permissions) {
@@ -81,6 +85,8 @@ export default Service.extend({
     }
 
     this.set('recordPermissions', recordPermissions)
+
+    sendEvent(this, EVENT.RECORD_PERMISSIONS_CHANGED, [modelName, recordId])
   },
 
   canRead (fieldName, modelName, recordId) {
@@ -130,7 +136,7 @@ export default Service.extend({
       )
 
       if (typeOf(fieldRecordPermissions) === 'number') {
-        return fieldRecordPermissions & permission
+        return Boolean(fieldRecordPermissions & permission)
       }
     }
 
@@ -140,7 +146,7 @@ export default Service.extend({
     )
 
     if (typeOf(fieldModelPermissions) === 'number') {
-      return fieldModelPermissions & permission
+      return Boolean(fieldModelPermissions & permission)
     }
 
     assert(

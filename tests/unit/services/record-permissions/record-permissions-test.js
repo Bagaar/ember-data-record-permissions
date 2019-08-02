@@ -1,16 +1,16 @@
 import { setupTest } from 'ember-qunit'
 import { module } from 'qunit'
 
-import runSetModelPermissionsTest from './set-model-permissions-test'
-import runSetRecordPermissionsTest from './set-record-permissions-test'
-import runCanReadTest from './can-read-test'
-import runCanWriteTest from './can-write-test'
+import runSetModelPermissionsTests from './set-model-permissions'
+import runSetRecordPermissionsTests from './set-record-permissions'
+import runCanReadTests from './can-read'
+import runCanWriteTests from './can-write'
 
 module('Unit | Service | record-permissions', function (hooks) {
   setupTest(hooks)
 
-  runSetModelPermissionsTest()
-  runSetRecordPermissionsTest()
-  runCanReadTest()
-  runCanWriteTest()
+  runSetModelPermissionsTests()
+  runSetRecordPermissionsTests()
+  runCanReadTests()
+  runCanWriteTests()
 })

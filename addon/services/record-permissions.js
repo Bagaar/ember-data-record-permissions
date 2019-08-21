@@ -3,10 +3,16 @@ import { EVENT } from '@bagaaravel/ember-data-record-permissions/config'
 import { getOwner } from '@ember/application'
 import { assert } from '@ember/debug'
 import { sendEvent } from '@ember/object/events'
-import Service from '@ember/service'
+import Service, { inject as service } from '@ember/service'
 import { typeOf } from '@ember/utils'
 
 export default Service.extend({
+  /**
+   * Services
+   */
+
+  storeService: service('store'),
+
   /**
    * State
    */
@@ -169,9 +175,68 @@ export default Service.extend({
       this.recordPermissions[modelName][recordId] &&
       this.recordPermissions[modelName][recordId][fieldName]
     )
+  },
+
+  extractRecordPermissions (modelClass, payload) {
+    let payloadPermissions = getPayloadPermissions(payload)
+
+    if (Object.keys(payloadPermissions).length === 0) {
+      return
+    }
+
+    let modelName = modelClass.modelName
+    let recordId = payload.id
+    let recordPermissions = {}
+    let serializer = this.storeService.serializerFor(modelName)
+
+    modelClass.fields.forEach((kind, fieldName) => {
+      let fieldKey
+
+      if (kind === 'attribute') {
+        fieldKey = serializer.keyForAttribute(fieldName)
+      } else {
+        fieldKey = serializer.keyForRelationship(fieldName)
+      }
+
+      let fieldPermissions = payloadPermissions[fieldKey]
+      let hasFieldPermissions = typeof fieldPermissions === 'string'
+
+      if (!hasFieldPermissions) {
+        return
+      }
+
+      recordPermissions[fieldName] = getBitwisePermissions(fieldPermissions)
+    })
+
+    this.setRecordPermissions(modelName, recordId, recordPermissions)
   }
 })
 
 function assertMessage (message) {
   return `@bagaaravel/ember-data-record-permissions: ${message}`
+}
+
+function getPayloadPermissions (payload) {
+  if (payload.meta && payload.meta.permissions) {
+    return {
+      ...payload.meta.permissions.attributes,
+      ...payload.meta.permissions.relationships
+    }
+  }
+
+  return {}
+}
+
+function getBitwisePermissions (stringPermissions) {
+  let bitwisePermissions = PERMISSIONS.NONE
+
+  if (stringPermissions.charAt(0) === 'r') {
+    bitwisePermissions = PERMISSIONS.READ
+  }
+
+  if (stringPermissions.charAt(1) === 'w') {
+    bitwisePermissions = bitwisePermissions | PERMISSIONS.WRITE
+  }
+
+  return bitwisePermissions
 }
